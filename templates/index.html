@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}E-Commerce Store - Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row my-4">
+        <div class="col-md-12">
+            <div class="p-5 mb-4 bg-dark rounded-3 text-white text-center">
+                <div class="container-fluid py-5">
+                    <h1 class="display-5 fw-bold">Welcome to Our E-Commerce Store</h1>
+                    <p class="fs-4">Discover amazing products at affordable prices.</p>
+                    <a href="{{ url_for('shop.products') }}" class="btn btn-primary btn-lg">Shop Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Products -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">Featured Products</h2>
+        </div>
+        
+        {% if featured_products %}
+            {% for product in featured_products %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card h-100 product-card">
+                        {% if product.image_url %}
+                            <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="text-center p-4">
+                                <i class="fas fa-image fa-5x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text product-price">${{ product.price }}</p>
+                            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="btn btn-primary btn-sm">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">No featured products available at the moment.</div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Categories Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">Shop by Category</h2>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100 dashboard-card">
+                <div class="card-body">
+                    <i class="fas fa-laptop fa-4x mb-3 text-info"></i>
+                    <h5 class="card-title">Electronics</h5>
+                    <p class="card-text">Discover the latest in technology and gadgets.</p>
+                    <a href="{{ url_for('shop.products', category='Electronics') }}" class="btn btn-outline-info">Browse Electronics</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100 dashboard-card">
+                <div class="card-body">
+                    <i class="fas fa-tshirt fa-4x mb-3 text-success"></i>
+                    <h5 class="card-title">Clothing</h5>
+                    <p class="card-text">Stay fashionable with our clothing collection.</p>
+                    <a href="{{ url_for('shop.products', category='Clothing') }}" class="btn btn-outline-success">Browse Clothing</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100 dashboard-card">
+                <div class="card-body">
+                    <i class="fas fa-home fa-4x mb-3 text-warning"></i>
+                    <h5 class="card-title">Home & Kitchen</h5>
+                    <p class="card-text">Find everything you need for your home.</p>
+                    <a href="{{ url_for('shop.products', category='Home') }}" class="btn btn-outline-warning">Browse Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">Why Shop With Us</h2>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-truck fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Fast Delivery</h5>
+                    <p class="card-text">Get your products delivered quickly and reliably.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-shield-alt fa-3x mb-3 text-success"></i>
+                    <h5 class="card-title">Secure Payment</h5>
+                    <p class="card-text">Your payment information is always protected.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-undo fa-3x mb-3 text-danger"></i>
+                    <h5 class="card-title">Easy Returns</h5>
+                    <p class="card-text">Not satisfied? Return products with ease.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-headset fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">24/7 Support</h5>
+                    <p class="card-text">Our customer service team is always here to help.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

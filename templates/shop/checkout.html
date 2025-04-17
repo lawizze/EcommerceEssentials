@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - E-Commerce Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Checkout</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if cart_items and cart_items|length > 0 %}
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Shipping Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="checkout-form" method="POST" action="{{ url_for('cart.checkout') }}">
+                            <div class="mb-3">
+                                <label for="shipping_address" class="form-label">Shipping Address*</label>
+                                <textarea class="form-control" id="shipping_address" name="shipping_address" rows="3" required></textarea>
+                                <div class="form-text">Please provide your complete shipping address including street address, city, state, and zip code.</div>
+                            </div>
+                            
+                            <h5 class="mt-4 mb-3">Order Review</h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in cart_items %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if item.image_url %}
+                                                        <img src="{{ item.image_url }}" alt="{{ item.name }}" class="img-thumbnail me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    {% else %}
+                                                        <div class="me-3 text-center bg-light p-2" style="width: 50px; height: 50px;">
+                                                            <i class="fas fa-image fa-lg text-muted"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <span>{{ item.name }}</span>
+                                                </div>
+                                            </td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>${{ item.price }}</td>
+                                            <td>${{ (item.price * item.quantity)|round(2) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+                                <a href="{{ url_for('cart.view_cart') }}" class="btn btn-outline-secondary">Back to Cart</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Subtotal:</span>
+                            <span>${{ total|round(2) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Shipping:</span>
+                            <span>$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3 fw-bold">
+                            <span>Total:</span>
+                            <span>${{ total|round(2) }}</span>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> This is a demonstration e-commerce store. No actual payments will be processed.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    Your cart is empty. Please add products to your cart before checking out.
+                </div>
+                <a href="{{ url_for('shop.products') }}" class="btn btn-primary">Browse Products</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

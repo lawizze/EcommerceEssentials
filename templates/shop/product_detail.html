@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - E-Commerce Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('shop.products') }}">Products</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('shop.products', category=product.category) }}">{{ product.category }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <!-- Product Image -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if product.image_url %}
+                        <img src="{{ product.image_url }}" class="img-fluid product-image" alt="{{ product.name }}">
+                    {% else %}
+                        <div class="py-5">
+                            <i class="fas fa-image fa-8x text-muted"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Details -->
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            <p class="fs-3 fw-bold text-primary mb-3">${{ product.price }}</p>
+            
+            <div class="mb-3">
+                <span class="badge bg-secondary">{{ product.category }}</span>
+                {% if product.stock > 10 %}
+                    <span class="badge bg-success">In Stock</span>
+                {% elif product.stock > 0 %}
+                    <span class="badge bg-warning">Low Stock ({{ product.stock }} left)</span>
+                {% else %}
+                    <span class="badge bg-danger">Out of Stock</span>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <h5>Description</h5>
+                <p>{{ product.description }}</p>
+            </div>
+            
+            {% if current_user.is_authenticated and product.stock > 0 %}
+                <form class="add-to-cart-form mb-4" action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                        </div>
+                        <div class="col-md-8 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            {% elif not current_user.is_authenticated %}
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle"></i> Please <a href="{{ url_for('auth.login') }}">log in</a> to add this product to your cart.
+                </div>
+            {% elif product.stock <= 0 %}
+                <div class="alert alert-danger mb-4">
+                    <i class="fas fa-exclamation-circle"></i> This product is currently out of stock.
+                </div>
+            {% endif %}
+            
+            <!-- Share Buttons -->
+            <div class="d-flex gap-2 mb-4">
+                <button class="btn btn-sm btn-outline-primary">
+                    <i class="fab fa-facebook-f"></i> Share
+                </button>
+                <button class="btn btn-sm btn-outline-info">
+                    <i class="fab fa-twitter"></i> Tweet
+                </button>
+                <button class="btn btn-sm btn-outline-danger">
+                    <i class="fab fa-pinterest"></i> Pin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <h3 class="mb-4">Related Products</h3>
+            </div>
+            
+            {% for related in related_products %}
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card h-100 product-card">
+                        {% if related.image_url %}
+                            <img src="{{ related.image_url }}" class="card-img-top" alt="{{ related.name }}">
+                        {% else %}
+                            <div class="text-center p-4">
+                                <i class="fas fa-image fa-5x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ related.name }}</h5>
+                            <p class="card-text product-price">${{ related.price }}</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('shop.product_detail', product_id=related.id) }}" class="btn btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

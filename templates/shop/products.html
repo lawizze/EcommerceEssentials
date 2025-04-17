@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - E-Commerce Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Products Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                {% if current_category %}
+                    {{ current_category }} Products
+                {% elif search_query %}
+                    Search Results for "{{ search_query }}"
+                {% else %}
+                    All Products
+                {% endif %}
+            </h2>
+        </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap justify-content-center">
+                <a href="{{ url_for('shop.products') }}" class="btn btn-outline-primary m-1 {% if not current_category %}active{% endif %}">All Products</a>
+                {% for category in categories %}
+                    <a href="{{ url_for('shop.products', category=category.category) }}" class="btn btn-outline-primary m-1 {% if current_category == category.category %}active{% endif %}">
+                        {{ category.category }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row">
+        {% if products %}
+            {% for product in products %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 product-card">
+                        {% if product.image_url %}
+                            <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="text-center p-4">
+                                <i class="fas fa-image fa-5x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text product-price">${{ product.price }}</p>
+                            <p class="card-text"><small class="text-muted">{{ product.category }}</small></p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="btn btn-primary">View Details</a>
+                                {% if current_user.is_authenticated and product.stock > 0 %}
+                                    <form class="add-to-cart-form" action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-cart-plus"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                {% elif product.stock <= 0 %}
+                                    <button class="btn btn-outline-danger w-100" disabled>Out of Stock</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>
+                                {% if product.stock > 10 %}
+                                    <span class="text-success"><i class="fas fa-check-circle"></i> In Stock</span>
+                                {% elif product.stock > 0 %}
+                                    <span class="text-warning"><i class="fas fa-exclamation-circle"></i> Low Stock ({{ product.stock }} left)</span>
+                                {% else %}
+                                    <span class="text-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    {% if search_query %}
+                        No products found matching "{{ search_query }}". <a href="{{ url_for('shop.products') }}">View all products</a>.
+                    {% elif current_category %}
+                        No products found in the {{ current_category }} category. <a href="{{ url_for('shop.products') }}">View all products</a>.
+                    {% else %}
+                        No products available at the moment.
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
