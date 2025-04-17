@@ -188,6 +188,55 @@ def users():
     
     return render_template('admin/users.html', users=users)
 
+@admin_bp.route('/users/add', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_user():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        role = request.form.get('role')
+        
+        # Validate inputs
+        if not username or not email or not password or not confirm_password or not role:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('admin.add_user'))
+        
+        if password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return redirect(url_for('admin.add_user'))
+        
+        conn = get_db_connection()
+        
+        # Check if username or email already exists
+        if conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone():
+            flash('Username already exists.', 'danger')
+            conn.close()
+            return redirect(url_for('admin.add_user'))
+            
+        if conn.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone():
+            flash('Email already exists.', 'danger')
+            conn.close()
+            return redirect(url_for('admin.add_user'))
+        
+        # Create new user
+        from werkzeug.security import generate_password_hash
+        hashed_password = generate_password_hash(password)
+        
+        conn.execute(
+            'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
+            (username, email, hashed_password, role)
+        )
+        conn.commit()
+        conn.close()
+        
+        flash('User added successfully.', 'success')
+        return redirect(url_for('admin.users'))
+    
+    return render_template('admin/users.html', is_add=True)
+
 @admin_bp.route('/users/edit/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required

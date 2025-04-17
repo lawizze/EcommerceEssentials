@@ -83,15 +83,28 @@ def register():
         # Create new user
         hashed_password = generate_password_hash(password)
         
-        conn.execute(
+        cursor = conn.execute(
             'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
             (username, email, hashed_password, 'customer')
         )
+        user_id = cursor.lastrowid
         conn.commit()
+        
+        # Get the newly created user
+        user_data = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
         conn.close()
         
-        flash('Registration successful! You can now log in.', 'success')
-        return redirect(url_for('auth.login'))
+        # Automatically log in the new user
+        user = User(
+            id=user_data['id'],
+            username=user_data['username'],
+            email=user_data['email'],
+            role=user_data['role']
+        )
+        login_user(user)
+        
+        flash('Registration successful! Welcome to our store.', 'success')
+        return redirect(url_for('shop.products'))
         
     return render_template('auth/register.html')
 
