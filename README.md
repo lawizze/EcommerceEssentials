@@ -69,7 +69,7 @@ A full-featured e-commerce platform built with Flask and SQLite, featuring role-
 
 Once the application is running, you can access it at:
 - http://localhost:5000 (local development)
-- or the deployed URL if hosted on a server
+
 
 ### Default Admin Account
 
