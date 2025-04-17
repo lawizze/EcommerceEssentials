@@ -27,7 +27,7 @@
             <div class="col-md-8 mx-auto">
                 <div class="card">
                     <div class="card-body">
-                        <form id="product-form" method="POST" action="{{ url_for('admin.add_product') }}">
+                        <form id="product-form" method="POST" action="{{ url_for('admin.add_product') }}" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Product Name*</label>
                                 <input type="text" class="form-control" id="name" name="name" required>
@@ -71,10 +71,46 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="image_url" class="form-label">Image URL</label>
-                                <input type="url" class="form-control" id="image_url" name="image_url">
-                                <div class="form-text">Enter a URL for the product image. If left blank, a placeholder will be used.</div>
+                                <label for="image_source" class="form-label">Product Image</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="image_source" id="image_url_option" value="url" checked onchange="toggleImageSource()">
+                                    <label class="form-check-label" for="image_url_option">
+                                        Use Image URL
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="image_source" id="image_upload_option" value="upload" onchange="toggleImageSource()">
+                                    <label class="form-check-label" for="image_upload_option">
+                                        Upload Image
+                                    </label>
+                                </div>
+                                
+                                <div id="url_input_section">
+                                    <input type="url" class="form-control" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
+                                    <div class="form-text">Enter a URL for the product image. Common image formats: JPG, PNG, GIF.</div>
+                                </div>
+                                
+                                <div id="file_input_section" style="display: none;">
+                                    <input type="file" class="form-control" id="image_file" name="image_file" accept="image/*">
+                                    <div class="form-text">Select an image file to upload. Maximum size: 5MB. Allowed formats: JPG, PNG, GIF.</div>
+                                </div>
                             </div>
+                            
+                            <script>
+                                function toggleImageSource() {
+                                    const urlOption = document.getElementById('image_url_option');
+                                    const urlSection = document.getElementById('url_input_section');
+                                    const fileSection = document.getElementById('file_input_section');
+                                    
+                                    if (urlOption.checked) {
+                                        urlSection.style.display = 'block';
+                                        fileSection.style.display = 'none';
+                                    } else {
+                                        urlSection.style.display = 'none';
+                                        fileSection.style.display = 'block';
+                                    }
+                                }
+                            </script>
                             
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Add Product</button>
@@ -100,7 +136,7 @@
             <div class="col-md-8 mx-auto">
                 <div class="card">
                     <div class="card-body">
-                        <form id="product-form" method="POST" action="{{ url_for('admin.edit_product', product_id=product.id) }}">
+                        <form id="product-form" method="POST" action="{{ url_for('admin.edit_product', product_id=product.id) }}" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Product Name*</label>
                                 <input type="text" class="form-control" id="name" name="name" value="{{ product.name }}" required>
@@ -144,10 +180,53 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="image_url" class="form-label">Image URL</label>
-                                <input type="url" class="form-control" id="image_url" name="image_url" value="{{ product.image_url }}">
-                                <div class="form-text">Enter a URL for the product image. If left blank, a placeholder will be used.</div>
+                                <label for="image_source" class="form-label">Product Image</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="image_source" id="image_url_option_edit" value="url" checked onchange="toggleImageSourceEdit()">
+                                    <label class="form-check-label" for="image_url_option_edit">
+                                        Use Image URL
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="image_source" id="image_upload_option_edit" value="upload" onchange="toggleImageSourceEdit()">
+                                    <label class="form-check-label" for="image_upload_option_edit">
+                                        Upload Image
+                                    </label>
+                                </div>
+                                
+                                <div id="url_input_section_edit">
+                                    <input type="url" class="form-control" id="image_url" name="image_url" value="{{ product.image_url }}" placeholder="https://example.com/image.jpg">
+                                    <div class="form-text">Enter a URL for the product image. Common image formats: JPG, PNG, GIF.</div>
+                                </div>
+                                
+                                <div id="file_input_section_edit" style="display: none;">
+                                    <input type="file" class="form-control" id="image_file" name="image_file" accept="image/*">
+                                    <div class="form-text">Select an image file to upload. Maximum size: 5MB. Allowed formats: JPG, PNG, GIF.</div>
+                                </div>
+                                
+                                {% if product.image_url %}
+                                <div class="mt-3">
+                                    <p>Current image:</p>
+                                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                                {% endif %}
                             </div>
+                            
+                            <script>
+                                function toggleImageSourceEdit() {
+                                    const urlOption = document.getElementById('image_url_option_edit');
+                                    const urlSection = document.getElementById('url_input_section_edit');
+                                    const fileSection = document.getElementById('file_input_section_edit');
+                                    
+                                    if (urlOption.checked) {
+                                        urlSection.style.display = 'block';
+                                        fileSection.style.display = 'none';
+                                    } else {
+                                        urlSection.style.display = 'none';
+                                        fileSection.style.display = 'block';
+                                    }
+                                }
+                            </script>
                             
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Update Product</button>
