@@ -59,13 +59,14 @@ def load_user(user_id):
     return User.get_by_id(user_id)
 
 class Product:
-    def __init__(self, id, name, description, price, image_url, category, stock, created_at):
+    def __init__(self, id, name, description, price, image_url, category, size, stock, created_at):
         self.id = id
         self.name = name
         self.description = description
         self.price = price
         self.image_url = image_url
         self.category = category
+        self.size = size
         self.stock = stock
         self.created_at = created_at
 
@@ -84,26 +85,26 @@ class Product:
         return product
 
     @staticmethod
-    def create(name, description, price, image_url, category, stock):
+    def create(name, description, price, image_url, category, size, stock):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO products (name, description, price, image_url, category, stock)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (name, description, price, image_url, category, stock))
+            INSERT INTO products (name, description, price, image_url, category, size, stock)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (name, description, price, image_url, category, size, stock))
         conn.commit()
         product_id = cursor.lastrowid
         conn.close()
         return product_id
 
     @staticmethod
-    def update(product_id, name, description, price, image_url, category, stock):
+    def update(product_id, name, description, price, image_url, category, size, stock):
         conn = get_db_connection()
         conn.execute('''
             UPDATE products 
-            SET name = ?, description = ?, price = ?, image_url = ?, category = ?, stock = ?
+            SET name = ?, description = ?, price = ?, image_url = ?, category = ?, size = ?, stock = ?
             WHERE id = ?
-        ''', (name, description, price, image_url, category, stock, product_id))
+        ''', (name, description, price, image_url, category, size, stock, product_id))
         conn.commit()
         conn.close()
 
@@ -283,5 +284,82 @@ class Order:
             SET status = ?
             WHERE id = ?
         ''', (status, order_id))
+        conn.commit()
+        conn.close()
+        
+class Review:
+    def __init__(self, id, product_id, user_id, rating, comment, created_at, username=None):
+        self.id = id
+        self.product_id = product_id
+        self.user_id = user_id
+        self.rating = rating
+        self.comment = comment
+        self.created_at = created_at
+        self.username = username
+    
+    @staticmethod
+    def create(product_id, user_id, rating, comment):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO reviews (product_id, user_id, rating, comment)
+            VALUES (?, ?, ?, ?)
+        ''', (product_id, user_id, rating, comment))
+        review_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return review_id
+    
+    @staticmethod
+    def get_by_product(product_id):
+        conn = get_db_connection()
+        reviews = conn.execute('''
+            SELECT r.*, u.username 
+            FROM reviews r 
+            JOIN users u ON r.user_id = u.id 
+            WHERE r.product_id = ? 
+            ORDER BY r.created_at DESC
+        ''', (product_id,)).fetchall()
+        conn.close()
+        return reviews
+    
+    @staticmethod
+    def get_average_rating(product_id):
+        conn = get_db_connection()
+        result = conn.execute('''
+            SELECT AVG(rating) as avg_rating, COUNT(*) as count
+            FROM reviews
+            WHERE product_id = ?
+        ''', (product_id,)).fetchone()
+        conn.close()
+        
+        if result and result['count'] > 0:
+            return {
+                'avg_rating': round(result['avg_rating'], 1),
+                'count': result['count']
+            }
+        else:
+            return {
+                'avg_rating': 0,
+                'count': 0
+            }
+            
+    @staticmethod
+    def delete(review_id, user_id=None):
+        conn = get_db_connection()
+        
+        if user_id:
+            # Only delete if user is the author
+            conn.execute('''
+                DELETE FROM reviews
+                WHERE id = ? AND user_id = ?
+            ''', (review_id, user_id))
+        else:
+            # Allow admin to delete any review
+            conn.execute('''
+                DELETE FROM reviews
+                WHERE id = ?
+            ''', (review_id,))
+            
         conn.commit()
         conn.close()

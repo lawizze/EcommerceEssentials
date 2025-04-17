@@ -53,6 +53,7 @@ def create_tables():
         price REAL NOT NULL,
         image_url TEXT,
         category TEXT NOT NULL,
+        size TEXT,
         stock INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -90,6 +91,19 @@ def create_tables():
         price REAL NOT NULL,
         FOREIGN KEY (order_id) REFERENCES orders (id),
         FOREIGN KEY (product_id) REFERENCES products (id)
+    )
+    ''')
+    
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+        comment TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products (id),
+        FOREIGN KEY (user_id) REFERENCES users (id)
     )
     ''')
     

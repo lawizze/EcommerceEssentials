@@ -65,11 +65,12 @@ def add_product():
         price = request.form.get('price')
         image_url = request.form.get('image_url')
         category = request.form.get('category')
+        size = request.form.get('size')
         stock = request.form.get('stock')
         
         # Validate inputs
         if not name or not description or not price or not category or not stock:
-            flash('All fields except image URL are required.', 'danger')
+            flash('All fields except image URL and size are required.', 'danger')
             return redirect(url_for('admin.add_product'))
         
         try:
@@ -80,7 +81,7 @@ def add_product():
             return redirect(url_for('admin.add_product'))
         
         # Create product
-        Product.create(name, description, price, image_url, category, stock)
+        Product.create(name, description, price, image_url, category, size, stock)
         
         flash('Product added successfully.', 'success')
         return redirect(url_for('admin.products'))
