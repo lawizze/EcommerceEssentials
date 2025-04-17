@@ -79,7 +79,6 @@ An admin account is created automatically with the following credentials:
 - **Password**: admin123
 - **Role**: admin
 
-(Note: Change these credentials immediately after first login in a production environment)
 
 ### User Roles
 
