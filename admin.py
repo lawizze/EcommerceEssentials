@@ -1,8 +1,22 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
 from flask_login import login_required, current_user
 from functools import wraps
+import os
+import uuid
+from werkzeug.utils import secure_filename
 from models import Product, User, Order
 from app import get_db_connection
+
+# Configure upload settings
+UPLOAD_FOLDER = 'static/uploads/products'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# Create upload directory if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -63,14 +77,14 @@ def add_product():
         name = request.form.get('name')
         description = request.form.get('description')
         price = request.form.get('price')
-        image_url = request.form.get('image_url')
         category = request.form.get('category')
         size = request.form.get('size')
         stock = request.form.get('stock')
+        image_source = request.form.get('image_source')
         
         # Validate inputs
         if not name or not description or not price or not category or not stock:
-            flash('All fields except image URL and size are required.', 'danger')
+            flash('All fields except image and size are required.', 'danger')
             return redirect(url_for('admin.add_product'))
         
         try:
@@ -79,6 +93,26 @@ def add_product():
         except ValueError:
             flash('Price must be a number and stock must be an integer.', 'danger')
             return redirect(url_for('admin.add_product'))
+        
+        # Handle image upload or URL
+        image_url = None
+        if image_source == 'upload' and 'image_file' in request.files:
+            file = request.files['image_file']
+            if file and file.filename != '':
+                if allowed_file(file.filename):
+                    # Create a unique filename to avoid collisions
+                    filename = secure_filename(file.filename)
+                    unique_filename = f"{uuid.uuid4()}_{filename}"
+                    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                    file.save(file_path)
+                    # Use relative path for the image URL
+                    image_url = f"/{file_path}"
+                else:
+                    flash('Invalid file type. Allowed types: png, jpg, jpeg, gif, webp', 'danger')
+                    return redirect(url_for('admin.add_product'))
+        else:
+            # Use the provided URL
+            image_url = request.form.get('image_url')
         
         # Create product
         Product.create(name, description, price, image_url, category, size, stock)
@@ -102,14 +136,14 @@ def edit_product(product_id):
         name = request.form.get('name')
         description = request.form.get('description')
         price = request.form.get('price')
-        image_url = request.form.get('image_url')
         category = request.form.get('category')
         size = request.form.get('size')
         stock = request.form.get('stock')
+        image_source = request.form.get('image_source')
         
         # Validate inputs
         if not name or not description or not price or not category or not stock:
-            flash('All fields except image URL and size are required.', 'danger')
+            flash('All fields except image and size are required.', 'danger')
             return redirect(url_for('admin.edit_product', product_id=product_id))
         
         try:
@@ -118,6 +152,28 @@ def edit_product(product_id):
         except ValueError:
             flash('Price must be a number and stock must be an integer.', 'danger')
             return redirect(url_for('admin.edit_product', product_id=product_id))
+        
+        # Handle image upload or URL
+        image_url = product['image_url']  # Default to existing image
+        if image_source == 'upload' and 'image_file' in request.files:
+            file = request.files['image_file']
+            if file and file.filename != '':
+                if allowed_file(file.filename):
+                    # Create a unique filename to avoid collisions
+                    filename = secure_filename(file.filename)
+                    unique_filename = f"{uuid.uuid4()}_{filename}"
+                    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                    file.save(file_path)
+                    # Use relative path for the image URL
+                    image_url = f"/{file_path}"
+                else:
+                    flash('Invalid file type. Allowed types: png, jpg, jpeg, gif, webp', 'danger')
+                    return redirect(url_for('admin.edit_product', product_id=product_id))
+        elif image_source == 'url':
+            # Use the provided URL if it's not empty
+            new_image_url = request.form.get('image_url')
+            if new_image_url:
+                image_url = new_image_url
         
         # Update product
         Product.update(product_id, name, description, price, image_url, category, size, stock)
