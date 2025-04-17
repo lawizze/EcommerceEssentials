@@ -120,7 +120,13 @@ def checkout():
         # Create order
         order_id = Order.create(current_user.id, total, shipping_address)
         
+        # Get order details for confirmation page
+        conn = get_db_connection()
+        order = conn.execute('SELECT * FROM orders WHERE id = ?', (order_id,)).fetchone()
+        items = Order.get_order_items(order_id)
+        conn.close()
+        
         flash('Order placed successfully.', 'success')
-        return redirect(url_for('shop.order_detail', order_id=order_id))
+        return render_template('shop/order_confirmation.html', order=order, items=items)
     
     return render_template('shop/checkout.html', cart_items=cart_items, total=total)

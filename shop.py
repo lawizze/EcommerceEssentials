@@ -7,31 +7,80 @@ shop_bp = Blueprint('shop', __name__, url_prefix='/shop')
 
 @shop_bp.route('/products')
 def products():
+    # Get filter parameters
     category = request.args.get('category')
     search = request.args.get('search')
+    sort_by = request.args.get('sort', 'newest')  # Default sort by newest
+    min_price = request.args.get('min_price')
+    max_price = request.args.get('max_price')
     
     conn = get_db_connection()
+    query_params = []
     
+    # Base query
+    base_query = 'SELECT * FROM products'
+    where_clauses = []
+    
+    # Add filters
     if category:
-        products = conn.execute('SELECT * FROM products WHERE category = ? ORDER BY id DESC', 
-                               (category,)).fetchall()
-    elif search:
+        where_clauses.append('category = ?')
+        query_params.append(category)
+    
+    if search:
         search_query = f'%{search}%'
-        products = conn.execute('''
-            SELECT * FROM products 
-            WHERE name LIKE ? OR description LIKE ? 
-            ORDER BY id DESC
-        ''', (search_query, search_query)).fetchall()
-    else:
-        products = conn.execute('SELECT * FROM products ORDER BY id DESC').fetchall()
+        where_clauses.append('(name LIKE ? OR description LIKE ?)')
+        query_params.extend([search_query, search_query])
+    
+    if min_price:
+        try:
+            min_price_value = float(min_price)
+            where_clauses.append('price >= ?')
+            query_params.append(min_price_value)
+        except ValueError:
+            pass
+    
+    if max_price:
+        try:
+            max_price_value = float(max_price)
+            where_clauses.append('price <= ?')
+            query_params.append(max_price_value)
+        except ValueError:
+            pass
+    
+    # Combine WHERE clauses
+    if where_clauses:
+        base_query += ' WHERE ' + ' AND '.join(where_clauses)
+    
+    # Add sorting
+    if sort_by == 'price_low':
+        base_query += ' ORDER BY price ASC'
+    elif sort_by == 'price_high':
+        base_query += ' ORDER BY price DESC'
+    elif sort_by == 'name':
+        base_query += ' ORDER BY name ASC'
+    else:  # Default: newest
+        base_query += ' ORDER BY id DESC'
+    
+    # Execute query
+    products = conn.execute(base_query, query_params).fetchall()
     
     # Get all categories for filter
     categories = conn.execute('SELECT DISTINCT category FROM products').fetchall()
     
+    # Get price range for filters
+    price_range = conn.execute('SELECT MIN(price) as min_price, MAX(price) as max_price FROM products').fetchone()
+    
     conn.close()
     
-    return render_template('shop/products.html', products=products, categories=categories,
-                          current_category=category, search_query=search)
+    return render_template('shop/products.html', 
+                          products=products, 
+                          categories=categories,
+                          current_category=category, 
+                          search_query=search,
+                          sort_by=sort_by,
+                          price_range=price_range,
+                          min_price=min_price,
+                          max_price=max_price)
 
 @shop_bp.route('/product/<int:product_id>')
 def product_detail(product_id):
