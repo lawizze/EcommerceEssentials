@@ -39,12 +39,17 @@
                             </div>
                             
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label for="price" class="form-label">Price ($)*</label>
                                     <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
                                 </div>
                                 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
+                                    <label for="size" class="form-label">Size</label>
+                                    <input type="text" class="form-control" id="size" name="size" placeholder="S, M, L, XL, etc.">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
                                     <label for="stock" class="form-label">Stock*</label>
                                     <input type="number" class="form-control" id="stock" name="stock" min="0" required>
                                 </div>
@@ -107,12 +112,17 @@
                             </div>
                             
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label for="price" class="form-label">Price ($)*</label>
                                     <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" value="{{ product.price }}" required>
                                 </div>
                                 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
+                                    <label for="size" class="form-label">Size</label>
+                                    <input type="text" class="form-control" id="size" name="size" value="{{ product.size }}" placeholder="S, M, L, XL, etc.">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
                                     <label for="stock" class="form-label">Stock*</label>
                                     <input type="number" class="form-control" id="stock" name="stock" min="0" value="{{ product.stock }}" required>
                                 </div>

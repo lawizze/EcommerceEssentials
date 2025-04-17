@@ -104,11 +104,12 @@ def edit_product(product_id):
         price = request.form.get('price')
         image_url = request.form.get('image_url')
         category = request.form.get('category')
+        size = request.form.get('size')
         stock = request.form.get('stock')
         
         # Validate inputs
         if not name or not description or not price or not category or not stock:
-            flash('All fields except image URL are required.', 'danger')
+            flash('All fields except image URL and size are required.', 'danger')
             return redirect(url_for('admin.edit_product', product_id=product_id))
         
         try:
@@ -119,7 +120,7 @@ def edit_product(product_id):
             return redirect(url_for('admin.edit_product', product_id=product_id))
         
         # Update product
-        Product.update(product_id, name, description, price, image_url, category, stock)
+        Product.update(product_id, name, description, price, image_url, category, size, stock)
         
         flash('Product updated successfully.', 'success')
         return redirect(url_for('admin.products'))
